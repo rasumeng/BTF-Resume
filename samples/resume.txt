@@ -1,0 +1,33 @@
+﻿asumengrobert787@gmail.com | 469-594-2623 | www.linkedin.com/in/robertasumeng/ | github.com/rasumeng 
+SUMMARY
+Computer Science student (BS, GPA: 3.8/4.0) skilled in AI/ML systems engineering, data pipelines, and production-grade concurrency. Experienced in LLM prompt pipelines, heuristic search algorithms (A*/BFS/DFS), and thread-safe simulators, achieving measurable improvements in predictive accuracy and system reliability. Proven ability to design scalable solutions that optimize performance and automate workflows.
+EDUCATION
+University of Texas at Arlington        Expected May 2027
+Bachelor of Science in Computer Science | GPA: 3.8 / 4.0
+WORK EXPERIENCE
+AI Trainer – Handshake          Dec 2025 – Present
+* Engineered domain-specific prompt pipelines for LLMs to support predictive modeling and data analytics workflows.
+* Designed output validation and feedback loops, improving model-driven prediction accuracy by 20%.
+* Integrated LLM-based solutions into internal tools, enabling more effective data-driven decision-making.
+Data Systems Engineer – FAPEMPA LLC         Feb 2023 – Dec 2024
+* Engineered scalable ETL pipelines for financial data across 10+ production sites, improving throughput by 40%.
+* Automated financial reporting tools using Python, reducing data processing time by 70% and increasing system reliability by 40%.
+* Developed SQL queries and CTE functions to reconcile multi-site data, increasing monthly reporting accuracy by 25%.
+IT Systems Intern – DFW Ghana SDA Church        Jan 2024 – Dec 2025
+* Automated database operations using Python, reducing manual effort by 30% with fault-tolerant backup orchestration.
+* Built server monitoring and auto-recovery system achieving 99.7% uptime for mission-critical infrastructure.
+PROJECTS                                                                         
+8-Puzzle AI Solver | Python        
+* Implemented 7 AI search algorithms (A* search, Greedy, UCS, BFS, DFS, DLS, IDS) and designed a weighted Manhattan heuristic; benchmarking showed A* expanded 95× fewer nodes (64 vs 6,068 UCS) across the 181k-state puzzle search space while preserving optimal solutions.
+* Engineered graph-search and tree-search frameworks using priority queues, visited-state hashing, and parent-pointer nodes for efficient traversal and solution reconstruction.
+Office Hours Simulator | Python         
+* Built a thread-safe office-hours simulator using locks/condition variables (capacity: 3 students), including fairness logic and automated breaks.
+* Deployed real-time Rich terminal dashboard + CSV ingestion pipeline visualizing queue dynamics with 10-entry rolling analytics window.
+PY Shell | Python (POSIX concepts)                
+* Developed production-grade shell interpreter supporting pipe streaming, redirection, and 50-entry history; 100% POSIX compliant.
+* Delivered dual CLI/Tkinter GUI with robust error recovery, processing 1k+ commands without crashes or memory leaks.
+LEADERSHIP  
+Secretary  – UTA ColorStack        Sep 2025 – Present
+* Engineered Notion database as single source of truth for 15+ officers; built filterable views reducing lookup time by 50%.
+* Automated roster sync between Slack/Notion for 50 members, standardizing 100+ records and saving 3 hours weekly.
+* Tracked engagement metrics across 5+ events; created dashboards identifying 8% membership growth drivers for executive strategy.
