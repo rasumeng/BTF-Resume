@@ -1,4 +1,4 @@
-from input_parser import parse_section
+from input_parser import parse_section, parse_subsectiontions
 from prompts import bullet_polish_prompt
 from llm_client import ask_llm
 
@@ -16,6 +16,11 @@ def build_resume(sections: dict) -> dict:
         else:
             improved_sections[section] = content
     return improved_sections    
+
+def polish_section(section_text: str) -> str:
+    improved_subsections = []
+    for sub in section_text:
+        pass
 
 def clean_bullets(text: str) -> str:
     lines = text.strip().split("\n")
