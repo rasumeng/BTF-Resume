@@ -49,8 +49,8 @@ Most AI resume tools cost money, require an account, or send your personal data 
 
 **1. Clone the repo**
 ```bash
-git clone https://github.com/yourusername/resume-ai.git
-cd resume-ai
+git clone https://github.com/rasumeng/BTF-Resume.git
+cd BTF-Resume
 ```
 
 **2. Create and activate a virtual environment**
@@ -112,7 +112,7 @@ python main.py --resume samples/resume.pdf --job samples/job.txt --output output
 ## Project Structure
 
 ```
-resume-ai/
+BTF-Resume/
 ├── main.py               # CLI entry point
 ├── llm_client.py         # Ollama API wrapper with model routing
 ├── prompts.py            # All prompt templates
