@@ -1,10 +1,10 @@
-# Resume AI
+# BTF Resume
 
 A free, local AI resume helper that polishes your resume bullets, tailors your resume to job descriptions, and formats new experience — all running privately on your own machine. No API keys, no subscriptions, no data leaving your device.
 
 ---
 
-## Why Resume AI?
+## Why BTF Resume?
 
 Most AI resume tools cost money, require an account, or send your personal data to external servers. This is my take on a free alternative — built from scratch in Python, powered by open-source LLMs that run entirely on your device.
 
