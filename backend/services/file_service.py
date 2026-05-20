@@ -45,7 +45,7 @@ class FileService:
             logger.info(f"✓ Listed {len(files)} resumes")
             return {"success": True, "resumes": files}
         except Exception as e:
-            logger.error(f"✗ Error listing resumes: {e}")
+            logger.error(f"[ERR] Error listing resumes: {e}")
             return {"success": False, "error": str(e)}
     
     @staticmethod
@@ -76,10 +76,10 @@ class FileService:
             logger.info(f"✓ Loaded resume: {filename}")
             return {"success": True, "content": content, "filename": filename}
         except FileNotFoundError as e:
-            logger.error(f"✗ File not found: {e}")
+            logger.error(f"[ERR] File not found: {e}")
             return {"success": False, "error": str(e)}
         except Exception as e:
-            logger.error(f"✗ Error loading resume: {e}")
+            logger.error(f"[ERR] Error loading resume: {e}")
             return {"success": False, "error": str(e)}
     
     @staticmethod
@@ -96,7 +96,7 @@ class FileService:
         """
         try:
             import json
-            logger.info(f"🚀 Starting PDF generation for {filename}")
+            logger.info(f"[OK] Starting PDF generation for {filename}")
             
             # Import inside method to avoid Flask module caching issues
             logger.info("Importing PDF generation modules...")
@@ -125,7 +125,7 @@ class FileService:
             is_valid, errors = resume_data.validate()
             if not is_valid:
                 error_msg = "; ".join(errors)
-                logger.error(f"✗ Resume validation failed: {error_msg}")
+                logger.error(f"[ERR] Resume validation failed: {error_msg}")
                 return {"success": False, "error": f"Invalid resume data: {error_msg}"}
             
             logger.info("Generating PDF...")
@@ -144,7 +144,7 @@ class FileService:
                 return {"success": False, "error": "PDF generation failed"}
                 
         except Exception as e:
-            logger.error(f"✗ Error generating PDF: {e}", exc_info=True)
+            logger.error(f"[ERR] Error generating PDF: {e}", exc_info=True)
             return {"success": False, "error": str(e)}
     
     @staticmethod
@@ -166,7 +166,7 @@ class FileService:
             {"success": true, "filename": ..., "path": ...} or error dict
         """
         try:
-            logger.info(f"🚀 Starting polished resume PDF generation for {filename}")
+            logger.info(f"[OK] Starting polished resume PDF generation for {filename}")
             
             # Step 1: Parse plain text into structured JSON
             from backend.services.llm import LLMService
@@ -234,7 +234,7 @@ class FileService:
             }
             
         except Exception as e:
-            logger.error(f"✗ Error generating polished resume PDF: {e}", exc_info=True)
+            logger.error(f"[ERR] Error generating polished resume PDF: {e}", exc_info=True)
             return {"success": False, "error": str(e)}
     
     @staticmethod
@@ -266,7 +266,7 @@ class FileService:
             logger.info(f"✓ Updated resume: {filename}")
             return {"success": True, "filename": filename}
         except Exception as e:
-            logger.error(f"✗ Error updating resume: {e}")
+            logger.error(f"[ERR] Error updating resume: {e}")
             return {"success": False, "error": str(e)}
     
     @staticmethod
@@ -301,7 +301,7 @@ class FileService:
             logger.info(f"✓ Deleted resume: {filename}")
             return {"success": True, "deleted": filename}
         except Exception as e:
-            logger.error(f"✗ Error deleting resume: {e}")
+            logger.error(f"[ERR] Error deleting resume: {e}")
             return {"success": False, "error": str(e)}
     
     @staticmethod
@@ -397,7 +397,7 @@ class FileService:
                     logger.info(f"✓ Extracted text from PDF: {filename}")
                     return {"success": True, "content": text.strip(), "filename": filename}
                 except Exception as e:
-                    logger.error(f"✗ Error extracting PDF text: {e}")
+                    logger.error(f"[ERR] Error extracting PDF text: {e}")
                     raise
             
             # Handle text files
@@ -411,7 +411,7 @@ class FileService:
                 raise ValueError(f"Unsupported file type: {filename}")
         
         except Exception as e:
-            logger.error(f"✗ Error extracting resume text: {e}")
+            logger.error(f"[ERR] Error extracting resume text: {e}")
             return {"success": False, "error": str(e)}
     
     @staticmethod
@@ -453,7 +453,7 @@ class FileService:
             }
         """
         try:
-            logger.info(f"🚀 Starting full alteration workflow for {original_filename}")
+            logger.info(f"[OK] Starting full alteration workflow for {original_filename}")
             
             # Step 1: Save altered text as fallback
             text_filename = AlterationService.save_alteration_text(
@@ -471,7 +471,7 @@ class FileService:
                 parse_result = LLMService.parse_to_pdf_format(altered_text)
                 
                 if not parse_result.get("success"):
-                    logger.warning(f"⚠️  JSON parsing failed: {parse_result.get('error')}")
+                    logger.warning(f"[WARN]  JSON parsing failed: {parse_result.get('error')}")
                     parsed_json = {}
                 else:
                     parsed_json = parse_result.get("parsed_resume", {})
@@ -495,7 +495,7 @@ class FileService:
             is_valid, errors = resume_data.validate()
             if not is_valid:
                 error_msg = "; ".join(errors)
-                logger.warning(f"⚠️  Resume validation warnings: {error_msg}")
+                logger.warning(f"[WARN]  Resume validation warnings: {error_msg}")
                 # Continue anyway - validation failures are non-critical
             
             # Generate PDF with metadata
@@ -555,11 +555,11 @@ class FileService:
                 "history_count": len(history.alterations)
             }
             
-            logger.info(f"✅ Alteration workflow complete for {original_filename}")
+            logger.info(f"[OK] Alteration workflow complete for {original_filename}")
             return result
             
         except Exception as e:
-            logger.error(f"✗ Error in alteration workflow: {e}", exc_info=True)
+            logger.error(f"[ERR] Error in alteration workflow: {e}", exc_info=True)
             return {
                 "success": False,
                 "error": str(e),
@@ -599,7 +599,7 @@ class FileService:
                 ]
             }
         except Exception as e:
-            logger.error(f"✗ Error retrieving history: {e}")
+            logger.error(f"[ERR] Error retrieving history: {e}")
             return {"success": False, "error": str(e)}
     
     @staticmethod

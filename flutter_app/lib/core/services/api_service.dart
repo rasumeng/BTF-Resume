@@ -740,30 +740,40 @@ class ApiService {
     }
   }
 
-  /// Submit user feedback
+  /// Submit user feedback to Vercel API
   Future<Map<String, dynamic>> submitFeedback({
     required String type,
     required int rating,
     required String message,
+    String? name,
+    bool isAnonymous = false,
     String? email,
   }) async {
     try {
+      // Determine the name to send
+      final String submitName = isAnonymous 
+          ? 'Anonymous' 
+          : (name?.isNotEmpty == true ? name! : 'Anonymous');
+      
+      // Send to Vercel API instead of Flask backend
       final response = await _dio.post(
-        '/submit-feedback',
+        '${AppConstants.vercelApiBase}/reviews',
         data: {
           'type': type,
           'rating': rating,
           'message': message,
           'email': email,
+          'name': submitName,
         },
       );
+      
       final data = response.data as Map<String, dynamic>;
 
       if (data['success'] != true) {
         throw Exception(data['error'] ?? 'Failed to submit feedback');
       }
 
-      logger.i('✓ Feedback submitted: ${data['data']['id']}');
+      logger.i('✓ Feedback submitted to Vercel: ${data['review']['id']}');
       return data as Map<String, dynamic>;
     } catch (e) {
       logger.e('✗ Error submitting feedback: $e');

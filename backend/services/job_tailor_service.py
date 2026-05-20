@@ -136,7 +136,7 @@ Return ONLY valid JSON, no markdown."""
                     logger.info(f"✓ Extracted job requirements: {len(parsed.get('required_skills', []))} required skills")
                     return parsed
                 except (json.JSONDecodeError, ValueError):
-                    logger.warning("⚠️  Could not parse job requirements JSON, using defaults")
+                    logger.warning("[WARN]  Could not parse job requirements JSON, using defaults")
                     return {"required_skills": [], "preferred_skills": [], "key_responsibilities": [], "role_title": "Position"}
             return {"required_skills": [], "preferred_skills": [], "key_responsibilities": []}
             
@@ -153,7 +153,7 @@ Return ONLY valid JSON, no markdown."""
             key_responsibilities = job_requirements.get("key_responsibilities", [])
             
             if not required_skills and not key_responsibilities:
-                logger.warning("⚠️  No job requirements to match against")
+                logger.warning("[WARN]  No job requirements to match against")
                 return []
             
             # Build analysis prompt
@@ -201,13 +201,13 @@ Return ONLY valid JSON array, no markdown or explanations."""
                                 source=match_dict.get("source", "Resume content")
                             ))
                         except (KeyError, ValueError, TypeError):
-                            logger.warning(f"⚠️  Could not parse match: {match_dict}")
+                            logger.warning(f"[WARN]  Could not parse match: {match_dict}")
                             continue
                     
                     logger.info(f"✓ Found {len(matches)} matches using LLM analysis (including projects)")
                     return matches
                 except (json.JSONDecodeError, ValueError) as e:
-                    logger.warning(f"⚠️  Could not parse LLM matches: {e}")
+                    logger.warning(f"[WARN]  Could not parse LLM matches: {e}")
                     return []
             
             return []
@@ -256,7 +256,7 @@ Rules:
                         suggestions=parsed.get("suggestions", [])[:3]
                     )
                 except (json.JSONDecodeError, KeyError):
-                    logger.warning("⚠️  Could not parse gap analysis JSON")
+                    logger.warning("[WARN]  Could not parse gap analysis JSON")
             
             return GapAnalysis(
                 missing_skills=missing_skills,
@@ -321,7 +321,7 @@ Key Responsibilities: {'; '.join(key_responsibilities[:5])}"""
                 changes = f"Resume tailored with {intensity} intensity to match {role_title} requirements"
                 return result, changes
             else:
-                logger.warning("⚠️  LLM tailoring failed, returning original")
+                logger.warning("[WARN]  LLM tailoring failed, returning original")
                 changes = f"Resume tailoring attempted with {intensity} intensity"
                 return resume_text, changes
                 

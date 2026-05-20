@@ -8,6 +8,8 @@ import '../../../../core/services/resume_file_service.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../shared/widgets/custom_dropdown.dart';
 import '../../../../shared/widgets/download_dialog.dart';
+import '../../../../shared/widgets/notification_dialog.dart';
+import '../../../../shared/mixins/has_clear_inputs.dart';
 
 // ============================================================================
 // PolishChange Model
@@ -41,7 +43,7 @@ class PolishScreen extends StatefulWidget {
 // ============================================================================
 // _PolishScreenState
 // ============================================================================
-class _PolishScreenState extends State<PolishScreen> {
+class _PolishScreenState extends State<PolishScreen> with HasClearInputs, AutomaticKeepAliveClientMixin {
   /* STATE VARIABLES */
   List<File> resumeFiles = [];
   int selectedResumeIndex = 0;
@@ -88,12 +90,15 @@ class _PolishScreenState extends State<PolishScreen> {
   // METHOD: Polish Resume
   // --------------------------------------------------------------------------
   Future<void> _polishResume() async {
+    // Guard: Prevent double-tap
+    if (isPolishing) return;
+    
     if (resumeFiles.isEmpty || selectedResumeIndex >= resumeFiles.length) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please select a resume to polish'),
-          backgroundColor: AppColors.errorRed,
-        ),
+      NotificationDialog.show(
+        context: context,
+        title: 'No Resume Selected',
+        message: 'Please select a resume to polish.',
+        isSuccess: false,
       );
       return;
     }
@@ -228,15 +233,14 @@ class _PolishScreenState extends State<PolishScreen> {
           isPolishing = false;
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error generating polished resume PDF: $pdfError'),
-              backgroundColor: AppColors.errorRed,
-              duration: const Duration(seconds: 5),
-            ),
+          NotificationDialog.show(
+            context: context,
+            title: 'PDF Error',
+            message: 'Error generating polished resume PDF',
+            isSuccess: false,
           );
         }
-        rethrow; // Re-throw to propagate error
+        rethrow;
       }
     } catch (e) {
       logger.e('Error polishing resume: $e');
@@ -260,12 +264,11 @@ class _PolishScreenState extends State<PolishScreen> {
           errorMessage = 'Backend request timed out. Please try again.';
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.errorRed,
-            duration: const Duration(seconds: 5),
-          ),
+        NotificationDialog.show(
+          context: context,
+          title: 'Error',
+          message: errorMessage,
+          isSuccess: false,
         );
       }
     }
@@ -283,6 +286,22 @@ class _PolishScreenState extends State<PolishScreen> {
       _showPolishedPreview = true;
     });
   }
+
+  // --------------------------------------------------------------------------
+  // METHOD: Clear Input Fields (for tab switching - hybrid approach)
+  // --------------------------------------------------------------------------
+  @override
+  void clearInputFields() {
+    // Polish screen has no text input fields, only selectors
+    // Keep: selectedResumeIndex, polishIntensity, hasPolished, polishChanges
+    // Nothing to clear
+  }
+
+  // --------------------------------------------------------------------------
+  // Keep widget alive when switching tabs
+  // --------------------------------------------------------------------------
+  @override
+  bool get wantKeepAlive => true;
 
   // --------------------------------------------------------------------------
   // METHOD: Generate PDF from Polished Resume
@@ -383,12 +402,11 @@ class _PolishScreenState extends State<PolishScreen> {
           isGeneratingPdf = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('PDF generated: $result'),
-            backgroundColor: AppColors.successGreen,
-            duration: const Duration(seconds: 3),
-          ),
+        NotificationDialog.show(
+          context: context,
+          title: 'PDF Generated',
+          message: 'Your polished resume has been saved.',
+          isSuccess: true,
         );
       }
     } catch (e) {
@@ -397,11 +415,11 @@ class _PolishScreenState extends State<PolishScreen> {
           isGeneratingPdf = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error generating PDF: $e'),
-            backgroundColor: AppColors.errorRed,
-          ),
+        NotificationDialog.show(
+          context: context,
+          title: 'Error',
+          message: 'Error generating PDF',
+          isSuccess: false,
         );
       }
     }
@@ -473,6 +491,7 @@ class _PolishScreenState extends State<PolishScreen> {
   // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Row(
       children: [
         // ====================================================================

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../config/colors.dart';
 import '../../../../config/typography.dart';
 import '../../../../core/services/api_service.dart';
+import '../../../../shared/widgets/notification_dialog.dart';
+import '../../../../shared/mixins/has_clear_inputs.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({Key? key}) : super(key: key);
@@ -10,14 +12,16 @@ class FeedbackScreen extends StatefulWidget {
   State<FeedbackScreen> createState() => _FeedbackScreenState();
 }
 
-class _FeedbackScreenState extends State<FeedbackScreen> {
+class _FeedbackScreenState extends State<FeedbackScreen> with HasClearInputs, AutomaticKeepAliveClientMixin {
   // Form state
   late TextEditingController _feedbackController;
   late TextEditingController _emailController;
+  late TextEditingController _nameController;
   
   String _selectedType = 'general';
   int _selectedRating = 4;
   bool _isSubmitting = false;
+  bool _isAnonymous = false;
   String? _successMessage;
 
   @override
@@ -25,22 +29,44 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     super.initState();
     _feedbackController = TextEditingController();
     _emailController = TextEditingController();
+    _nameController = TextEditingController();
   }
 
   @override
   void dispose() {
     _feedbackController.dispose();
     _emailController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
+  // --------------------------------------------------------------------------
+  // METHOD: Clear Input Fields (for tab switching - hybrid approach)
+  // --------------------------------------------------------------------------
+  @override
+  void clearInputFields() {
+    setState(() {
+      // Clear input fields but preserve selected type/rating
+      _feedbackController.clear();
+      _emailController.clear();
+      _nameController.clear();
+      // Keep: _selectedType, _selectedRating, _isAnonymous
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // Keep widget alive when switching tabs
+  // --------------------------------------------------------------------------
+  @override
+  bool get wantKeepAlive => true;
+
   Future<void> _submitFeedback() async {
     if (_feedbackController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your feedback'),
-          backgroundColor: Colors.red,
-        ),
+      NotificationDialog.show(
+        context: context,
+        title: 'Missing Feedback',
+        message: 'Please enter your feedback before submitting.',
+        isSuccess: false,
       );
       return;
     }
@@ -52,41 +78,38 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         type: _selectedType,
         rating: _selectedRating,
         message: _feedbackController.text.trim(),
+        name: _nameController.text.trim().isEmpty ? null : _nameController.text.trim(),
+        isAnonymous: _isAnonymous,
         email: _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
       );
 
       if (result['success']) {
         setState(() {
-          _successMessage = result['data']['message'];
+          _successMessage = result['data']['message'] ?? 'Thank you for your feedback!';
           _feedbackController.clear();
           _emailController.clear();
+          _nameController.clear();
           _selectedType = 'general';
           _selectedRating = 4;
+          _isAnonymous = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_successMessage!),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 3),
-          ),
+        NotificationDialog.show(
+          context: context,
+          title: 'Feedback Submitted',
+          message: 'Thank you for your feedback!',
+          isSuccess: true,
         );
-
-        // Clear success message after 5 seconds
-        await Future.delayed(const Duration(seconds: 5));
-        if (mounted) {
-          setState(() => _successMessage = null);
-        }
       } else {
         throw Exception(result['error'] ?? 'Failed to submit feedback');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        NotificationDialog.show(
+          context: context,
+          title: 'Error',
+          message: 'Failed to submit feedback. Please try again.',
+          isSuccess: false,
         );
       }
     } finally {
@@ -98,6 +121,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: SingleChildScrollView(
@@ -149,6 +173,72 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             const SizedBox(height: 16),
             _buildStarRating(),
             const SizedBox(height: 32),
+
+            // Name Input (only shown if not anonymous)
+            if (!_isAnonymous) ...[
+              Text(
+                'Your Name (optional)',
+                style: AppTypography.labelText.copyWith(
+                  color: AppColors.cream,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _nameController,
+                enabled: !_isSubmitting,
+                style: AppTypography.bodyLarge.copyWith(
+                  color: AppColors.cream,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Enter your name',
+                  hintStyle: AppTypography.bodyLarge.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: AppColors.gold.withOpacity(0.3),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: AppColors.gold,
+                      width: 2,
+                    ),
+                  ),
+                  filled: true,
+                  fillColor: AppColors.darkSecondary,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // Anonymous Checkbox
+            Row(
+              children: [
+                Checkbox(
+                  value: _isAnonymous,
+                  onChanged: _isSubmitting ? null : (value) {
+                    setState(() {
+                      _isAnonymous = value ?? false;
+                      if (_isAnonymous) {
+                        _nameController.clear();
+                      }
+                    });
+                  },
+                  activeColor: AppColors.gold,
+                  checkColor: AppColors.darkPrimary,
+                ),
+                Text(
+                  'Submit Anonymously',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
 
             // Feedback Message
             Text(

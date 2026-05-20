@@ -37,6 +37,18 @@ dependencies:
   syncfusion_flutter_pdfviewer: ^24.2.9
   window_manager: ^0.3.8
   
+  # Embedded Python Runtime
+  py_engine_desktop: ^1.1.0
+  
+  # Auto Updates
+  flutter_desktop_updater:
+    git:
+      url: https://github.com/qasimovv/flutter_desktop_updater.git
+      ref: main
+  
+  # Process Execution
+  process_run: ^0.14.1
+  
   # Icons
   cupertino_icons: ^1.0.2
 
@@ -54,3 +66,15 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/python/
+    - assets/ollama/
+    - assets/models/
+    
+    - assets/python/backend/app.py
+    - assets/python/backend/config.py
+    - assets/python/backend/wsgi.py
+    - assets/python/backend/__init__.py
+    - assets/python/backend/routes/
+    - assets/python/backend/services/
+    - assets/python/core/
+    - assets/python/requirements.txt

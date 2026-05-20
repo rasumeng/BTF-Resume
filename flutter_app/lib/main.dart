@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter_desktop_updater/flutter_desktop_updater.dart';
 import 'config/colors.dart';
 import 'config/typography.dart';
 import 'features/splash/presentation/splash_screen.dart';
+import 'features/setup/presentation/screens/setup_screen.dart';
 import 'features/resumes/presentation/screens/my_resumes_screen.dart';
 import 'features/polish/presentation/screens/polish_screen.dart';
 import 'features/tailor/presentation/screens/tailor_screen.dart';
 import 'features/feedback/presentation/screens/feedback_screen.dart';
+import 'shared/mixins/has_clear_inputs.dart';
+import 'core/services/app_initialization_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Configure updater
+  UpdateConfig().configure(
+    updateJsonUrl: 'https://rasumeng.github.io/BT-Resume/releases/app-archive.json',
+  );
+
   // Set minimum window size
   await windowManager.ensureInitialized();
   const windowOptions = WindowOptions(
@@ -21,7 +30,7 @@ Future<void> main() async {
     await windowManager.show();
     await windowManager.focus();
   });
-  
+
   runApp(const BTFResumeApp());
 }
 
@@ -44,8 +53,64 @@ class BTFResumeApp extends StatelessWidget {
           error: AppColors.errorRed,
         ),
       ),
-      home: const SplashWrapper(),
+      home: const SetupWrapper(),
     );
+  }
+}
+
+// ============================================================================
+// SetupWrapper - Handles first-time setup before main app
+// ============================================================================
+class SetupWrapper extends StatefulWidget {
+  const SetupWrapper({Key? key}) : super(key: key);
+
+  @override
+  State<SetupWrapper> createState() => _SetupWrapperState();
+}
+
+class _SetupWrapperState extends State<SetupWrapper> {
+  bool _isSetupComplete = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSetupStatus();
+  }
+
+  Future<void> _checkSetupStatus() async {
+    final initService = AppInitializationService();
+    final isComplete = await initService.checkSetupStatus();
+    setState(() {
+      _isSetupComplete = isComplete;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: AppColors.darkPrimary,
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.gold,
+          ),
+        ),
+      );
+    }
+
+    if (!_isSetupComplete) {
+      return SetupScreen(
+        onComplete: () {
+          setState(() {
+            _isSetupComplete = true;
+          });
+        },
+      );
+    }
+
+    return const SplashWrapper();
   }
 }
 
@@ -61,6 +126,16 @@ class SplashWrapper extends StatefulWidget {
 
 class _SplashWrapperState extends State<SplashWrapper> {
   bool _isReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkForUpdates();
+  }
+
+  Future<void> _checkForUpdates() async {
+    await UpdateManager().checkForUpdate();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,15 +162,67 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _previousTabIndex = 0;
+  
+  // Keys to access screen state
+  final GlobalKey<State> _myResumesKey = GlobalKey();
+  final GlobalKey<State> _polishKey = GlobalKey();
+  final GlobalKey<State> _tailorKey = GlobalKey();
+  final GlobalKey<State> _feedbackKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    
+    final int fromIndex = _previousTabIndex;
+    final int toIndex = _tabController.index;
+    
+    if (fromIndex != toIndex) {
+      _clearInputsForTab(fromIndex);
+      _previousTabIndex = toIndex;
+    }
+  }
+
+  void _clearInputsForTab(int tabIndex) {
+    switch (tabIndex) {
+      case 0: // My Resumes
+        break; // No input fields to clear
+      case 1: // Polish
+        try {
+          final polishState = _polishKey.currentState;
+          if (polishState != null) {
+            (polishState as dynamic).clearInputFields();
+          }
+        } catch (_) {}
+        break;
+      case 2: // Tailor
+        try {
+          final tailorState = _tailorKey.currentState;
+          if (tailorState != null) {
+            (tailorState as dynamic).clearInputFields();
+          }
+        } catch (_) {}
+        break;
+      case 3: // Feedback
+        try {
+          final feedbackState = _feedbackKey.currentState;
+          if (feedbackState != null) {
+            (feedbackState as dynamic).clearInputFields();
+          }
+        } catch (_) {}
+        break;
+    }
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -159,13 +286,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         controller: _tabController,
         children: [
           // My Resumes Tab
-          const MyResumesScreen(),
+          MyResumesScreen(key: _myResumesKey),
           // Polish Tab
-          const PolishScreen(),
+          PolishScreen(key: _polishKey),
           // Tailor Tab
-          const TailorScreen(),
+          TailorScreen(key: _tailorKey),
           // Experience Tab
-          const FeedbackScreen(),
+          FeedbackScreen(key: _feedbackKey),
         ],
       ),
     );

@@ -7,6 +7,8 @@ import '../../../../config/typography.dart';
 import '../../../../core/services/resume_file_service.dart';
 import '../../../../shared/widgets/custom_dropdown.dart';
 import '../../../../shared/widgets/download_dialog.dart';
+import '../../../../shared/widgets/notification_dialog.dart';
+import '../../../../shared/mixins/has_clear_inputs.dart';
 import '../controllers/tailor_controller.dart';
 import '../models/tailor_models.dart';
 
@@ -24,7 +26,7 @@ class TailorScreen extends StatefulWidget {
 // ============================================================================
 // _TailorScreenState
 // ============================================================================
-class _TailorScreenState extends State<TailorScreen> {
+class _TailorScreenState extends State<TailorScreen> with HasClearInputs, AutomaticKeepAliveClientMixin {
   /* STATE VARIABLES */
   List<File> resumeFiles = [];
   int selectedResumeIndex = 0;
@@ -95,22 +97,25 @@ class _TailorScreenState extends State<TailorScreen> {
   // METHOD: Tailor Resume
   // --------------------------------------------------------------------------
   Future<void> _tailorResume() async {
+    // Guard: Prevent double-tap
+    if (isTailoring) return;
+    
     if (jobDescriptionController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please enter a job description'),
-          backgroundColor: AppColors.errorRed,
-        ),
+      NotificationDialog.show(
+        context: context,
+        title: 'Missing Job Description',
+        message: 'Please enter a job description to tailor your resume.',
+        isSuccess: false,
       );
       return;
     }
 
     if (resumeFiles.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('No resume selected'),
-          backgroundColor: AppColors.errorRed,
-        ),
+      NotificationDialog.show(
+        context: context,
+        title: 'No Resume Selected',
+        message: 'Please select a resume to tailor.',
+        isSuccess: false,
       );
       return;
     }
@@ -186,11 +191,11 @@ class _TailorScreenState extends State<TailorScreen> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('✓ Resume tailored successfully!'),
-            backgroundColor: AppColors.successGreen,
-          ),
+        NotificationDialog.show(
+          context: context,
+          title: 'Success',
+          message: 'Your resume has been tailored successfully!',
+          isSuccess: true,
         );
       }
     } catch (e) {
@@ -199,11 +204,11 @@ class _TailorScreenState extends State<TailorScreen> {
         isTailoring = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error tailoring resume: $e'),
-            backgroundColor: AppColors.errorRed,
-          ),
+        NotificationDialog.show(
+          context: context,
+          title: 'Error',
+          message: 'Error tailoring resume. Please try again.',
+          isSuccess: false,
         );
       }
     }
@@ -231,25 +236,45 @@ class _TailorScreenState extends State<TailorScreen> {
   }
 
   // --------------------------------------------------------------------------
+  // METHOD: Clear Input Fields (for tab switching - hybrid approach)
+  // --------------------------------------------------------------------------
+  @override
+  void clearInputFields() {
+    setState(() {
+      // Clear input fields but preserve results
+      jobPositionController.clear();
+      jobCompanyController.clear();
+      jobDescriptionController.clear();
+      // Keep: hasTailored, tailoredPdfFile, tailorMatches, categoryScores, etc.
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // Keep widget alive when switching tabs
+  // --------------------------------------------------------------------------
+  @override
+  bool get wantKeepAlive => true;
+
+  // --------------------------------------------------------------------------
   // METHOD: Analyze Fit (Show confidence without tailoring)
   // --------------------------------------------------------------------------
   Future<void> _analyzeFit() async {
     if (jobDescriptionController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please enter a job description'),
-          backgroundColor: AppColors.errorRed,
-        ),
+      NotificationDialog.show(
+        context: context,
+        title: 'Missing Job Description',
+        message: 'Please enter a job description to analyze.',
+        isSuccess: false,
       );
       return;
     }
 
     if (resumeFiles.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('No resume selected'),
-          backgroundColor: AppColors.errorRed,
-        ),
+      NotificationDialog.show(
+        context: context,
+        title: 'No Resume Selected',
+        message: 'Please select a resume to analyze.',
+        isSuccess: false,
       );
       return;
     }
@@ -294,11 +319,11 @@ class _TailorScreenState extends State<TailorScreen> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Analysis complete! See your fit above.'),
-            backgroundColor: AppColors.successGreen,
-          ),
+        NotificationDialog.show(
+          context: context,
+          title: 'Analysis Complete',
+          message: 'See your job fit analysis above.',
+          isSuccess: true,
         );
       }
     } catch (e) {
@@ -307,11 +332,11 @@ class _TailorScreenState extends State<TailorScreen> {
         isTailoring = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error analyzing fit: $e'),
-            backgroundColor: AppColors.errorRed,
-          ),
+        NotificationDialog.show(
+          context: context,
+          title: 'Error',
+          message: 'Error analyzing fit. Please try again.',
+          isSuccess: false,
         );
       }
     }
@@ -455,6 +480,7 @@ class _TailorScreenState extends State<TailorScreen> {
   // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Row(
       children: [
         // ====================================================================

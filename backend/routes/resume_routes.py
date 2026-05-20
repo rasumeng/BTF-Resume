@@ -68,7 +68,7 @@ def save_resume_pdf():
             from core.pdf import generate_pdf as test_pdf
             logger.info("✓ Successfully imported generate_pdf from core.pdf")
         except ImportError as ie:
-            logger.error(f"✗ Failed to import from core.pdf: {ie}")
+            logger.error(f"[ERR] Failed to import from core.pdf: {ie}")
         
         data = request.get_json()
         filename = data.get('filename')
@@ -145,7 +145,7 @@ def delete_resume():
         resume_path = Path(resumes_dir) / filename
         CacheService.invalidate_cache(resume_path)
     except Exception as cache_err:
-        logger.warning(f"⚠️  Failed to invalidate cache: {cache_err}")
+        logger.warning(f"[WARN]  Failed to invalidate cache: {cache_err}")
     
     result = FileService.delete_resume(filename)
     status_code = 200 if result.get('success') else 500
@@ -285,7 +285,7 @@ def get_polish_changes():
         return jsonify(result), status_code
         
     except Exception as e:
-        logger.error(f"✗ Exception in get_polish_changes: {e}")
+        logger.error(f"[ERR] Exception in get_polish_changes: {e}")
         import traceback
         logger.error(traceback.format_exc())
         return jsonify({
@@ -342,7 +342,7 @@ def tailor_resume():
         return jsonify(result_dict), 200
     
     except Exception as e:
-        logger.error(f"✗ Error in tailor_resume route: {e}", exc_info=True)
+        logger.error(f"[ERR] Error in tailor_resume route: {e}", exc_info=True)
         return jsonify({"success": False, "error": str(e)}), 500
 
 @resume_bp.route('/analyze-fit', methods=['POST'])
@@ -391,7 +391,7 @@ def analyze_fit():
         return jsonify(result_dict), 200
     
     except Exception as e:
-        logger.error(f"✗ Error in analyze_fit route: {e}", exc_info=True)
+        logger.error(f"[ERR] Error in analyze_fit route: {e}", exc_info=True)
         return jsonify({"success": False, "error": str(e)}), 500
 
 @resume_bp.route('/grade-resume', methods=['POST'])
@@ -415,7 +415,7 @@ def grade_resume():
     
     print("=== grade_resume route called ===", file=sys.stderr, flush=True)
     sys.stderr.flush()
-    logger.warning("⚠️  grade_resume route called")
+    logger.warning("[WARN]  grade_resume route called")
     try:
         data = request.get_json()
         resume_text = data.get('resume_text')
@@ -446,9 +446,9 @@ def grade_resume():
                     parse_result = LLMService.parse_to_pdf_format(resume_text)
                     if parse_result.get('success'):
                         CacheService.save_parsed_resume(resume_path, parse_result.get('parsed_resume', {}))
-                        logger.info(f"✅ Created cache during grading: {filename}")
+                        logger.info(f"[OK] Created cache during grading: {filename}")
                 except Exception as parse_err:
-                    logger.warning(f"⚠️  Failed to create cache during grading: {parse_err}")
+                    logger.warning(f"[WARN]  Failed to create cache during grading: {parse_err}")
         
         if not resume_text:
             return jsonify({
@@ -456,13 +456,13 @@ def grade_resume():
                 "error": "resume_text or filename required"
             }), 400
         
-        logger.warning("⚠️  Calling LLMService.grade_resume()")
+        logger.warning("[WARN]  Calling LLMService.grade_resume()")
         result = LLMService.grade_resume(resume_text)
         status_code = 200 if result.get('success') else 500
         return jsonify(result), status_code
     
     except Exception as e:
-        logger.error(f"✗ Exception in grade_resume route: {e}")
+        logger.error(f"[ERR] Exception in grade_resume route: {e}")
         import traceback
         logger.error(traceback.format_exc())
         return jsonify({
@@ -503,9 +503,9 @@ def parse_resume():
             resumes_dir = get_resumes_dir()
             resume_path = Path(resumes_dir) / filename
             CacheService.save_parsed_resume(resume_path, parsed_data)
-            logger.info(f"✅ Cached parsed resume: {filename}")
+            logger.info(f"[OK] Cached parsed resume: {filename}")
         except Exception as cache_err:
-            logger.warning(f"⚠️  Failed to cache: {cache_err}")
+            logger.warning(f"[WARN]  Failed to cache: {cache_err}")
     
     return jsonify(result), status_code
 
@@ -566,7 +566,7 @@ def save_altered_resume():
         return jsonify(result), status_code
         
     except Exception as e:
-        logger.error(f"✗ Error saving altered resume: {e}", exc_info=True)
+        logger.error(f"[ERR] Error saving altered resume: {e}", exc_info=True)
         return jsonify({
             "success": False,
             "error": str(e),
@@ -614,7 +614,7 @@ def alteration_history():
         return jsonify(result), status_code
         
     except Exception as e:
-        logger.error(f"✗ Error retrieving alteration history: {e}")
+        logger.error(f"[ERR] Error retrieving alteration history: {e}")
         return jsonify({
             "success": False,
             "error": str(e)
@@ -657,7 +657,7 @@ def alteration_stats():
         return jsonify(result), status_code
         
     except Exception as e:
-        logger.error(f"✗ Error retrieving alteration stats: {e}")
+        logger.error(f"[ERR] Error retrieving alteration stats: {e}")
         return jsonify({
             "success": False,
             "error": str(e)

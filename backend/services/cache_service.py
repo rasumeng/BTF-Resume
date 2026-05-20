@@ -48,7 +48,7 @@ class CacheService:
             with open(cache_path, 'w', encoding='utf-8') as f:
                 json.dump(cache_data, f, indent=2)
             
-            logger.info(f"✅ Cached parsed resume: {cache_path}")
+            logger.info(f"[OK] Cached parsed resume: {cache_path}")
             return True
         except Exception as e:
             logger.error(f"❌ Failed to cache parsed resume: {e}")
@@ -69,7 +69,7 @@ class CacheService:
             cache_path = CacheService.get_cache_path(resume_path)
             
             if not cache_path.exists():
-                logger.debug(f"⏭️  No cache found for: {resume_path}")
+                logger.debug(f"[SKIP]  No cache found for: {resume_path}")
                 return None
             
             with open(cache_path, 'r', encoding='utf-8') as f:
@@ -77,7 +77,7 @@ class CacheService:
             
             parsed_data = cache_data.get("parsed_data")
             timestamp = cache_data.get("timestamp", "unknown")
-            logger.info(f"✅ Loaded cached parsed resume (cached at {timestamp}): {cache_path}")
+            logger.info(f"[OK] Loaded cached parsed resume (cached at {timestamp}): {cache_path}")
             return parsed_data
         except Exception as e:
             logger.error(f"❌ Failed to load cached resume: {e}")
@@ -99,7 +99,7 @@ class CacheService:
             
             if cache_path.exists():
                 cache_path.unlink()
-                logger.info(f"🗑️  Invalidated cache: {cache_path}")
+                logger.info(f"[DEL]  Invalidated cache: {cache_path}")
             
             return True
         except Exception as e:

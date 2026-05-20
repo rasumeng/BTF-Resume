@@ -1,0 +1,28 @@
+{
+  "appName": "BT-Resume",
+  "description": "Local AI Resume Helper - Polish, Tailor, and Format your resume privately on your own machine.",
+  "items": [
+    {
+      "version": "1.0.0",
+      "shortVersion": 0,
+      "changes": [
+        {
+          "type": "feat",
+          "message": "Initial release with AI resume polishing, tailoring, and grading"
+        },
+        {
+          "type": "feat",
+          "message": "Embedded Python runtime and Ollama AI engine"
+        },
+        {
+          "type": "feat",
+          "message": "PDF generation and resume management"
+        }
+      ],
+      "date": "2026-05-14",
+      "mandatory": false,
+      "url": "https://github.com/rasumeng/BT-Resume/releases/download/v1.0.0/",
+      "platform": "windows"
+    }
+  ]
+}

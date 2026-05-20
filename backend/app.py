@@ -38,17 +38,17 @@ from services.ollama_service import get_ollama_service
 
 # ─── Initialize Required Directories ───
 logger.info("=" * 60)
-logger.info("📁 Initializing application directories...")
+logger.info("[APP] Initializing application directories...")
 logger.info("=" * 60)
 
 try:
     resumes_dir = get_resumes_dir()
-    logger.info(f"✓ Resumes directory ready: {resumes_dir}")
+    logger.info(f"[OK] Resumes directory ready: {resumes_dir}")
     
     outputs_dir = get_outputs_dir()
-    logger.info(f"✓ Outputs directory ready: {outputs_dir}")
+    logger.info(f"[OK] Outputs directory ready: {outputs_dir}")
 except Exception as e:
-    logger.error(f"✗ Failed to initialize directories: {e}")
+    logger.error(f"[ERR] Failed to initialize directories: {e}")
     sys.exit(1)
 
 # ─── Flask App Setup ───
@@ -57,30 +57,27 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # ─── Ollama Service Initialization ───
 ollama_service = get_ollama_service()
-logger.info(f"app.py: Got Ollama service instance {id(ollama_service)}")
+logger.info("[APP] app.py: Got Ollama service instance")
 
 
 def initialize_ollama():
     """Initialize Ollama service. Called by run_backend.py."""
     logger.info("=" * 60)
-    logger.info("🚀 Initializing Ollama LLM Service from app.py...")
-    logger.info(f"Service instance ID: {id(ollama_service)}")
+    logger.info("[APP] Initializing Ollama LLM Service from app.py...")
+    logger.info(f"[APP] Service instance ID: {id(ollama_service)}")
     logger.info("=" * 60)
     
-    logger.info(f"Before startup: is_ready={ollama_service.is_ready}")
+    logger.info(f"[APP] Before startup: is_ready={ollama_service.is_ready}")
     success = ollama_service.startup()
-    logger.info(f"After startup: is_ready={ollama_service.is_ready}, success={success}")
+    logger.info(f"[APP] After startup: is_ready={ollama_service.is_ready}, success={success}")
     
     if success:
-        logger.info("✅ Ollama service initialized successfully in app!")
+        logger.info("[OK] Ollama service initialized successfully in app!")
         logger.info(f"Ollama is_ready flag: {ollama_service.is_ready}")
         return True
     else:
-        logger.warning(
-            "⚠️  Ollama service failed to initialize. "
-            "Please ensure Ollama is installed and running: https://ollama.ai"
-        )
-        logger.info(f"Ollama is_ready flag: {ollama_service.is_ready}")
+        logger.warning("[WARN] Ollama service failed to initialize. Please ensure Ollama is installed and running: https://ollama.ai")
+        logger.info(f"[APP] Ollama is_ready flag: {ollama_service.is_ready}")
         return False
 
 
@@ -88,9 +85,9 @@ def initialize_ollama():
 def inject_ollama_service():
     """Inject Ollama service into request context."""
     from flask import g
-    logger.debug(f"before_request: injecting ollama_service instance {id(ollama_service)} with is_ready={ollama_service.is_ready}")
+    logger.debug(f"[DEBUG] before_request: injecting ollama_service instance")
     g.ollama_service = ollama_service
-    logger.debug(f"before_request: g.ollama_service is now {id(g.ollama_service)} with is_ready={g.ollama_service.is_ready}")
+    logger.debug(f"[DEBUG] before_request: g.ollama_service is now set with is_ready={g.ollama_service.is_ready}")
 
 
 # ─── Health Check Endpoint (Critical for Startup) ───
@@ -128,18 +125,18 @@ def status():
 try:
     from routes.resume_routes import resume_bp
     
-    logger.info(f"resume_bp type: {type(resume_bp)}")
-    logger.info(f"resume_bp routes: {resume_bp.deferred_functions if hasattr(resume_bp, 'deferred_functions') else 'N/A'}")
+    logger.info("[APP] resume_bp type:")
+    logger.info(f"         {type(resume_bp)}")
 
     app.register_blueprint(resume_bp, url_prefix="/api")
-    logger.info("✓ Registered resume routes")
+    logger.info("[OK] Registered resume routes")
     
     # Debug: Print all registered routes
-    logger.info("=== ALL REGISTERED ROUTES ===")
+    logger.info("[APP] === ALL REGISTERED ROUTES ===")
     for rule in app.url_map.iter_rules():
-        logger.info(f"  {rule.rule} -> {rule.endpoint}")
+        logger.info(f"    {rule.rule} -> {rule.endpoint}")
 except Exception as e:
-    logger.error(f"✗ Failed to register resume routes: {e}")
+    logger.error(f"[ERR] Failed to register resume routes: {e}")
     import traceback
     logger.error(traceback.format_exc())
 
@@ -152,15 +149,15 @@ def bad_request(error):
 
 @app.errorhandler(404)
 def not_found(error):
-    logger.error(f"404 NOT FOUND: {request.path} - {error}")
+    logger.error(f"[ERR] 404 NOT FOUND: {request.path} - {error}")
     return jsonify({"success": False, "error": "Endpoint not found"}), 404
 
 
 @app.errorhandler(500)
 def server_error(error):
-    logger.error(f"SERVER ERROR HANDLER: {error}")
+    logger.error(f"[ERR] SERVER ERROR HANDLER: {error}")
     import traceback
-    logger.error(f"Traceback: {traceback.format_exc()}")
+    logger.error(f"[ERR] Traceback: {traceback.format_exc()}")
     return jsonify({"success": False, "error": "Internal server error"}), 500
 
 
@@ -168,31 +165,28 @@ def server_error(error):
 def startup_ollama():
     """Initialize Ollama service on app startup."""
     logger.info("=" * 60)
-    logger.info("🚀 Initializing Ollama LLM Service...")
+    logger.info("[APP] Initializing Ollama LLM Service...")
     logger.info("=" * 60)
 
     if ollama_service.startup():
-        logger.info("✅ Ollama service initialized successfully!")
+        logger.info("[OK] Ollama service initialized successfully!")
     else:
-        logger.warning(
-            "⚠️  Ollama service failed to initialize. "
-            "Please ensure Ollama is installed and running: https://ollama.ai"
-        )
+        logger.warning("[WARN] Ollama service failed to initialize. Please ensure Ollama is installed and running: https://ollama.ai")
 
 
 def shutdown_ollama():
     """Gracefully shutdown Ollama service on app shutdown."""
     logger.info("=" * 60)
-    logger.info("🛑 Shutting down Ollama LLM Service...")
+    logger.info("[APP] Shutting down Ollama LLM Service...")
     logger.info("=" * 60)
     ollama_service.shutdown()
-    logger.info("✓ Ollama service shutdown complete")
+    logger.info("[OK] Ollama service shutdown complete")
 
 
 # ─── Startup ───
 if __name__ == "__main__":
-    logger.info(f"🚀 Starting Resume AI Backend on {FLASK_HOST}:{FLASK_PORT}")
-    logger.info(f"📁 Resumes directory: {get_resumes_dir()}")
+    logger.info("[APP] Starting Resume AI Backend on")
+    logger.info(f"    {FLASK_HOST}:{FLASK_PORT}")
 
     # Initialize Ollama on startup
     startup_ollama()
@@ -203,6 +197,6 @@ if __name__ == "__main__":
     try:
         app.run(host=FLASK_HOST, port=FLASK_PORT, debug=False, use_reloader=False)
     except KeyboardInterrupt:
-        logger.info("✓ Shutdown signal received")
+        logger.info("[OK] Shutdown signal received")
     finally:
         shutdown_ollama()

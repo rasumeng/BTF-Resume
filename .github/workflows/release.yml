@@ -1,0 +1,100 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install NSIS
+        run: choco install nsis -y
+
+      - name: Build Flutter App
+        working-directory: ./flutter_app
+        run: |
+          flutter pub get
+          flutter build windows --release
+
+      - name: Update NSIS Version
+        working-directory: ./installer/windows
+        shell: powershell
+        run: |
+          $version = $env:GITHUB_REF_NAME -replace 'v', ''
+          $nsis = Get-Content installer.nsi -Raw
+          $parts = $version.Split('.')
+          $nsis = $nsis -replace 'VERSIONMAJOR \d+', "VERSIONMAJOR $($parts[0])"
+          $nsis = $nsis -replace 'VERSIONMINOR \d+', "VERSIONMINOR $($parts[1])"
+          $nsis = $nsis -replace 'VERSIONBUILD \d+', "VERSIONBUILD $($parts[2])"
+          $nsis = $nsis -replace 'OutFile "BT-Resume-Setup\.exe"', "OutFile `"BTFResume-$version-Setup.exe`""
+          Set-Content installer.nsi -Value $nsis -NoNewline
+
+      - name: Build NSIS Installer
+        working-directory: ./installer/windows
+        run: makensis installer.nsi
+
+      - name: Rename Installer
+        shell: powershell
+        run: |
+          Move-Item installer/windows/BT-Resume-Setup.exe releases/BTFResume-${{ env.GITHUB_REF_NAME }}-Setup.exe
+
+      - name: Generate Update Manifest
+        shell: powershell
+        run: |
+          $version = $env:GITHUB_REF_NAME -replace 'v', ''
+          $date = Get-Date -Format "yyyy-MM-dd"
+          $tag = $env:GITHUB_REF_NAME
+          @"
+          {
+            "appName": "BT-Resume",
+            "description": "Local AI Resume Helper - Polish, Tailor, and Format your resume privately on your own machine.",
+            "items": [
+              {
+                "version": "$version",
+                "shortVersion": 0,
+                "changes": [
+                  {
+                    "type": "feat",
+                    "message": "Release $tag"
+                  }
+                ],
+                "date": "$date",
+                "mandatory": false,
+                "url": "https://github.com/rasumeng/BT-Resume/releases/download/$tag/",
+                "platform": "windows"
+              }
+            ]
+          }
+"@ | Set-Content releases/app-archive.json
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            releases/BTFResume-*.exe
+            releases/app-archive.json
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update GitHub Pages Manifest
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./releases
+          publish_branch: gh-pages
+          destination_dir: releases

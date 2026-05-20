@@ -47,22 +47,22 @@ class OllamaService:
         Returns:
             True if successful, False otherwise
         """
-        logger.info("🚀 Starting Ollama service initialization...")
+        logger.info("[OLLAMA] Starting Ollama service initialization...")
 
         try:
             # Step 1: Ensure Ollama is running
             if not self._ensure_ollama_running():
-                logger.error("✗ Failed to start Ollama")
+                logger.error("[ERR] Failed to start Ollama")
                 return False
 
             # Step 2: Health check
             if not self._health_check():
-                logger.error("✗ Ollama health check failed")
+                logger.error("[ERR] Ollama health check failed")
                 return False
 
             # Step 3: Ensure model is pulled
             if not self._ensure_model_loaded():
-                logger.error(f"✗ Failed to load model: {self.model}")
+                logger.error(f"[ERR] Failed to load model: {self.model}")
                 return False
 
             # Step 4: Test inference (non-critical)
@@ -73,11 +73,11 @@ class OllamaService:
                 # Don't fail just because inference test failed - might be a transient issue
 
             self.is_ready = True
-            logger.info(f"✅ Ollama ready with {self.model}")
+            logger.info(f"[OK] Ollama ready with {self.model}")
             return True
 
         except Exception as e:
-            logger.error(f"✗ Ollama startup error: {e}")
+            logger.error(f"[ERR] Ollama startup error: {e}")
             import traceback
             logger.error(traceback.format_exc())
             return False
@@ -93,7 +93,7 @@ class OllamaService:
 
         # Try to connect
         if self._ping_ollama():
-            logger.info("✓ Ollama already running")
+            logger.info("[OK] Ollama already running")
             return True
 
         logger.info("Ollama not running - attempting to start...")
@@ -122,7 +122,7 @@ class OllamaService:
                         # Wait for startup
                         time.sleep(5)
                         if self._ping_ollama():
-                            logger.info("✓ Ollama started successfully")
+                            logger.info("[OK] Ollama started successfully")
                             return True
                         break
 
@@ -135,7 +135,7 @@ class OllamaService:
                 )
                 time.sleep(5)
                 if self._ping_ollama():
-                    logger.info("✓ Ollama started successfully")
+                    logger.info("[OK] Ollama started successfully")
                     return True
 
             logger.error(
@@ -177,7 +177,7 @@ class OllamaService:
                 f"{self.api_endpoint}/tags", timeout=HEALTH_CHECK_TIMEOUT
             )
             if response.status_code == 200:
-                logger.info("✓ Ollama health check passed")
+                logger.info("[OK] Ollama health check passed")
                 return True
             else:
                 logger.error(f"Health check returned status {response.status_code}")
@@ -198,7 +198,7 @@ class OllamaService:
         try:
             # Check if model exists
             if self._model_exists():
-                logger.info(f"✓ Model {self.model} already exists")
+                logger.info(f"[OK] Model {self.model} already exists")
                 return True
 
             # Pull model
@@ -224,7 +224,7 @@ class OllamaService:
                 # Check if our model is in the list (exact or partial match)
                 for name in model_names:
                     if self.model in name or name.startswith(self.model.split(":")[0]):
-                        logger.info(f"✓ Found model: {name}")
+                        logger.info(f"[OK] Found model: {name}")
                         return True
             return False
         except Exception as e:
@@ -248,7 +248,7 @@ class OllamaService:
             )
 
             if response.status_code == 200:
-                logger.info(f"✓ Model {self.model} pulled successfully")
+                logger.info(f"[OK] Model {self.model} pulled successfully")
                 return True
             else:
                 logger.error(f"Pull failed with status {response.status_code}")
@@ -282,7 +282,7 @@ class OllamaService:
             )
 
             if response.status_code == 200:
-                logger.info("✓ Inference test successful")
+                logger.info("[OK] Inference test successful")
                 return True
             else:
                 logger.error(f"Inference test failed with status {response.status_code}")
@@ -336,11 +336,11 @@ class OllamaService:
         Returns:
             True if successful
         """
-        logger.info("🛑 Shutting down Ollama service...")
+        logger.info("[OLLAMA] Shutting down Ollama service...")
 
         try:
             self.is_ready = False
-            logger.info("✓ Ollama service shutdown complete")
+            logger.info("[OK] Ollama service shutdown complete")
             return True
 
         except Exception as e:
@@ -371,7 +371,7 @@ def get_ollama_service() -> OllamaService:
     """Get the global Ollama service instance."""
     global _ollama_service
     if _ollama_service is None:
-        logger.warning("⚠️  Creating NEW Ollama service instance (this should only happen once at startup)")
+        logger.warning("[WARN] Creating NEW Ollama service instance (this should only happen once at startup)")
         _ollama_service = OllamaService()
-    logger.warning(f"get_ollama_service() returning instance {id(_ollama_service)} - is_ready={_ollama_service.is_ready}, model={_ollama_service.model if hasattr(_ollama_service, 'model') else 'N/A'}")
+    logger.warning(f"[WARN] get_ollama_service() returning instance {id(_ollama_service)} - is_ready={_ollama_service.is_ready}, model={_ollama_service.model if hasattr(_ollama_service, 'model') else 'N/A'}")
     return _ollama_service

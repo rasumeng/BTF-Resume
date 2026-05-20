@@ -84,7 +84,7 @@ class FeedbackService:
             }
             
         except Exception as e:
-            logger.error(f"✗ Error submitting feedback: {e}")
+            logger.error(f"[ERR] Error submitting feedback: {e}")
             return {
                 "success": False,
                 "error": f"Failed to submit feedback: {str(e)}"
@@ -141,7 +141,7 @@ class FeedbackService:
             }
             
         except Exception as e:
-            logger.error(f"✗ Error getting feedback summary: {e}")
+            logger.error(f"[ERR] Error getting feedback summary: {e}")
             return {
                 "success": False,
                 "error": str(e)

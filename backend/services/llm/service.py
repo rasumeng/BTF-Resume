@@ -60,18 +60,18 @@ class LLMService:
             
             if not result.get("success"):
                 error_msg = result.get("error", "No response from Ollama")
-                logger.error(f"✗ Ollama generation failed: {error_msg}")
+                logger.error(f"[ERR] Ollama generation failed: {error_msg}")
                 return None
             
             response = result.get("data", {}).get("response", "")
             if not response:
-                logger.error("✗ No response text received from Ollama")
+                logger.error("[ERR] No response text received from Ollama")
                 return None
             
             return response.strip()
             
         except Exception as e:
-            logger.error(f"✗ Error calling Ollama: {e}")
+            logger.error(f"[ERR] Error calling Ollama: {e}")
             return None
     
     @staticmethod
@@ -107,13 +107,13 @@ DO NOT include any markdown, code blocks, or explanations. Just the JSON array."
             
             if not result.get("success"):
                 error_msg = result.get("error", "No response from Ollama. Please try again.")
-                logger.error(f"✗ Ollama generation failed: {error_msg}")
+                logger.error(f"[ERR] Ollama generation failed: {error_msg}")
                 return {"success": False, "error": error_msg}
             
             response = result.get("data", {}).get("response", "")
             
             if not response:
-                logger.error("✗ No response text received from Ollama")
+                logger.error("[ERR] No response text received from Ollama")
                 return {"success": False, "error": "No text response from Ollama. Please try again."}
             
             logger.debug(f"Raw Ollama response: {response[:500]}")
@@ -127,14 +127,14 @@ DO NOT include any markdown, code blocks, or explanations. Just the JSON array."
             
             # Fallback: if we got a single response, treat as one polished bullet
             if response and len(response) > 10:
-                logger.warning("⚠️  Could not parse JSON response, returning raw response as single bullet")
+                logger.warning("[WARN]  Could not parse JSON response, returning raw response as single bullet")
                 return {"success": True, "bullets": [response.strip()]}
             
-            logger.error("✗ No valid response received from Ollama")
+            logger.error("[ERR] No valid response received from Ollama")
             return {"success": False, "error": "Ollama returned invalid response"}
                 
         except Exception as e:
-            logger.error(f"✗ Error polishing bullets: {e}")
+            logger.error(f"[ERR] Error polishing bullets: {e}")
             logger.error(traceback.format_exc())
             return {"success": False, "error": str(e)}
     
@@ -163,31 +163,31 @@ DO NOT include any markdown, code blocks, or explanations. Just the JSON array."
             
             if not result.get("success"):
                 error_msg = result.get("error", "No response from Ollama. Please try again.")
-                logger.error(f"✗ Ollama generation failed: {error_msg}")
+                logger.error(f"[ERR] Ollama generation failed: {error_msg}")
                 return {"success": False, "error": error_msg}
             
             response = result.get("data", {}).get("response", "").strip()
             
             if not response:
-                logger.error("✗ No response text received from Ollama")
+                logger.error("[ERR] No response text received from Ollama")
                 return {"success": False, "error": "No text response from Ollama. Please try again."}
             
             # Validate: Polished resume should contain key sections and reasonable length
             min_length = len(resume_text) * 0.4  # Should be at least 40% of original
             if len(response) < min_length:
-                logger.warning(f"⚠️  Polished response significantly shorter: {len(response)} chars vs {len(resume_text)} original")
+                logger.warning(f"[WARN]  Polished response significantly shorter: {len(response)} chars vs {len(resume_text)} original")
             
             required_sections = ['experience', 'education', 'skills']
             response_lower = response.lower()
             missing_sections = [s for s in required_sections if s not in response_lower]
             if missing_sections:
-                logger.warning(f"⚠️  Polished resume missing sections: {missing_sections}")
+                logger.warning(f"[WARN]  Polished resume missing sections: {missing_sections}")
             
             logger.info(f"✓ Polished resume: {len(response)} characters")
             return {"success": True, "polished_resume": response}
             
         except Exception as e:
-            logger.error(f"✗ Error polishing resume: {e}")
+            logger.error(f"[ERR] Error polishing resume: {e}")
             logger.error(traceback.format_exc())
             return {"success": False, "error": str(e)}
     
@@ -239,13 +239,13 @@ Example format:
             
             if not result.get("success"):
                 error_msg = result.get("error", "No response from Ollama. Please try again.")
-                logger.error(f"✗ Ollama generation failed: {error_msg}")
+                logger.error(f"[ERR] Ollama generation failed: {error_msg}")
                 return {"success": False, "error": error_msg}
             
             response = result.get("data", {}).get("response", "")
             
             if not response:
-                logger.error("✗ No response text received from Ollama")
+                logger.error("[ERR] No response text received from Ollama")
                 return {"success": False, "error": "No text response from Ollama. Please try again."}
             
             # Extract grade data
@@ -255,11 +255,11 @@ Example format:
                 logger.info(f"✓ Resume graded: {grade_data.get('score', 0)}/100")
                 return {"success": True, "grade": grade_data}
             else:
-                logger.error("✗ Failed to parse grade data from response")
+                logger.error("[ERR] Failed to parse grade data from response")
                 return {"success": False, "error": "Failed to parse resume grading response"}
                 
         except Exception as e:
-            logger.error(f"✗ Error grading resume: {e}")
+            logger.error(f"[ERR] Error grading resume: {e}")
             logger.error(traceback.format_exc())
             return {"success": False, "error": str(e)}
     
@@ -285,7 +285,7 @@ Example format:
             result = ollama.generate(prompt, stream=False)
             
             if not result.get("success"):
-                logger.warning(f"⚠️  Failed to generate change summary: {result.get('error')}")
+                logger.warning(f"[WARN]  Failed to generate change summary: {result.get('error')}")
                 # Return graceful fallback
                 return {
                     "success": True,
@@ -318,7 +318,7 @@ Example format:
                 }
                 
         except Exception as e:
-            logger.error(f"✗ Error generating change summary: {e}")
+            logger.error(f"[ERR] Error generating change summary: {e}")
             logger.error(traceback.format_exc())
             # Always return success with fallback changes to not break UX
             return {"success": True, "changes": ["Resume enhanced with AI improvements"]}
@@ -345,13 +345,13 @@ Example format:
             
             if not result.get("success"):
                 error_msg = result.get("error", "No response from Ollama. Please try again.")
-                logger.error(f"✗ Ollama generation failed: {error_msg}")
+                logger.error(f"[ERR] Ollama generation failed: {error_msg}")
                 return {"success": False, "error": error_msg}
             
             response = result.get("data", {}).get("response", "")
             
             if not response:
-                logger.error("✗ No response text received from Ollama")
+                logger.error("[ERR] No response text received from Ollama")
                 return {"success": False, "error": "No text response from Ollama. Please try again."}
             
             logger.debug(f"Raw Ollama response: {response[:500]}")
@@ -360,13 +360,13 @@ Example format:
             parsed = extract_json_from_response(response)
             
             if parsed and validate_parsed_resume(parsed):
-                logger.info("✅ Successfully parsed resume structure from Ollama")
+                logger.info("[OK] Successfully parsed resume structure from Ollama")
                 return {"success": True, "parsed_resume": parsed}
             else:
-                logger.error("✗ Parsed data did not match expected resume structure")
+                logger.error("[ERR] Parsed data did not match expected resume structure")
                 return {"success": False, "error": "Invalid resume structure returned by LLM"}
                 
         except Exception as e:
-            logger.error(f"✗ Error parsing resume: {e}")
+            logger.error(f"[ERR] Error parsing resume: {e}")
             logger.error(traceback.format_exc())
             return {"success": False, "error": str(e)}

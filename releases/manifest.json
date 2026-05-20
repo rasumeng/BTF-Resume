@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0",
+  "download_url": "https://beyondtheframe.vercel.app/releases/BTFResume-1.0.0.exe",
+  "release_notes": "Initial release with AI resume polishing, tailoring, and grading features. Includes embedded Python runtime and Ollama AI engine.",
+  "build_number": "1",
+  "min_app_version": "1.0.0",
+  "release_date": "2026-05-14"
+}

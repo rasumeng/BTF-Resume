@@ -114,7 +114,7 @@ class AlterationService:
             return text_filename
             
         except Exception as e:
-            logger.error(f"✗ Error saving alteration text: {e}")
+            logger.error(f"[ERR] Error saving alteration text: {e}")
             raise
     
     @staticmethod
@@ -137,7 +137,7 @@ class AlterationService:
             logger.info(f"✓ Cached parsed structure: {json_filename}")
             
         except Exception as e:
-            logger.error(f"⚠️  Failed to cache parsed structure: {e}")
+            logger.error(f"[WARN]  Failed to cache parsed structure: {e}")
             # Non-critical, don't raise
     
     @staticmethod
@@ -170,7 +170,7 @@ class AlterationService:
             )
             
         except Exception as e:
-            logger.error(f"✗ Error loading history: {e}")
+            logger.error(f"[ERR] Error loading history: {e}")
             return None
     
     @staticmethod
@@ -187,7 +187,7 @@ class AlterationService:
             logger.info(f"✓ Saved alteration history: {history_filename}")
             
         except Exception as e:
-            logger.error(f"✗ Error saving history: {e}")
+            logger.error(f"[ERR] Error saving history: {e}")
             raise
     
     @staticmethod
@@ -220,7 +220,7 @@ class AlterationService:
             return history
             
         except Exception as e:
-            logger.error(f"✗ Error adding to history: {e}")
+            logger.error(f"[ERR] Error adding to history: {e}")
             raise
     
     @staticmethod
@@ -254,5 +254,5 @@ class AlterationService:
             return stats
             
         except Exception as e:
-            logger.error(f"✗ Error getting alteration stats: {e}")
+            logger.error(f"[ERR] Error getting alteration stats: {e}")
             return {"error": str(e)}
