@@ -35,11 +35,12 @@ jobs:
         shell: powershell
         run: |
           cd flutter_app
-          $output = flutter build windows --release --verbose *>&1
+          $output = flutter build windows --release *>&1
           $exitCode = $LASTEXITCODE
-          $output | Out-File -FilePath build_log.txt -Encoding utf8
+          $output | Out-File -FilePath $env:RUNNER_TEMP\build_log.txt -Encoding utf8
           if ($exitCode -ne 0) {
-            $output | Select-Object -Last 100
+            Write-Host "Build failed. Full output:"
+            $output
             exit $exitCode
           }
 
@@ -48,7 +49,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: flutter-build-log
-          path: flutter_app/build_log.txt
+          path: ${{ runner.temp }}\build_log.txt
           retention-days: 7
 
       - name: Update NSIS Version
