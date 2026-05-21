@@ -199,8 +199,14 @@ class AppInitializationService {
         await _copyDirectory(Directory(assetPath), backendDir);
         logger.i('📦 Copied backend from assets to: $_backendPath');
       } else {
-        // Fallback: create a minimal backend runner if assets not found
-        final runnerScript = File('$_backendPath/run.py');
+        logger.w('⚠️ Backend assets not found, will create fallback runner');
+      }
+
+      // Always ensure run.py exists — whether copied from assets or created fresh
+      // This is critical: the bundled assets may not include run.py, but
+      // _startFlaskBackend() always executes '$backendPath/run.py'.
+      final runnerScript = File('$_backendPath/run.py');
+      if (!await runnerScript.exists()) {
         await runnerScript.writeAsString('''
 import sys
 import os
@@ -210,7 +216,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backend.app import app
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
+    app.run(host="127.0.0.1", port=5000, debug=False, use_reloader=False)
 ''');
       }
 
