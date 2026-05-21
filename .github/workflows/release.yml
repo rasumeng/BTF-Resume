@@ -28,9 +28,12 @@ jobs:
         working-directory: ./flutter_app
         run: flutter pub get
 
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Build Flutter App
         working-directory: ./flutter_app
-        run: flutter build windows --release
+        run: flutter build windows --release --verbose
 
       - name: Update NSIS Version
         working-directory: ./installer/windows
