@@ -31,9 +31,23 @@ jobs:
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Build Flutter App
-        working-directory: ./flutter_app
-        run: flutter build windows --release --verbose
+      - name: Build Flutter App (with log capture)
+        shell: powershell
+        run: |
+          cd flutter_app
+          flutter build windows --release --verbose 2>&1 | Out-File -FilePath build_log.txt -Encoding utf8
+          if ($LASTEXITCODE -ne 0) {
+            Get-Content build_log.txt -Tail 50
+            exit $LASTEXITCODE
+          }
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-build-log
+          path: flutter_app/build_log.txt
+          retention-days: 7
 
       - name: Update NSIS Version
         working-directory: ./installer/windows
