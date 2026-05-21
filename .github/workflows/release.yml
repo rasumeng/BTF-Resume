@@ -38,7 +38,15 @@ jobs:
       - name: Build Flutter App
         working-directory: ./flutter_app
         shell: cmd
-        run: flutter build windows --release
+        run: flutter build windows --release > build_log.txt 2>&1
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-build-log
+          path: flutter_app/build_log.txt
+          retention-days: 7
 
       - name: Update NSIS Version
         working-directory: ./installer/windows
