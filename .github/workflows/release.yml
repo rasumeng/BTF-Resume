@@ -35,10 +35,12 @@ jobs:
         shell: powershell
         run: |
           cd flutter_app
-          flutter build windows --release --verbose 2>&1 | Out-File -FilePath build_log.txt -Encoding utf8
-          if ($LASTEXITCODE -ne 0) {
-            Get-Content build_log.txt -Tail 50
-            exit $LASTEXITCODE
+          $output = flutter build windows --release --verbose *>&1
+          $exitCode = $LASTEXITCODE
+          $output | Out-File -FilePath build_log.txt -Encoding utf8
+          if ($exitCode -ne 0) {
+            $output | Select-Object -Last 100
+            exit $exitCode
           }
 
       - name: Upload build log on failure
