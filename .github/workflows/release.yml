@@ -59,28 +59,24 @@ jobs:
           $version = $env:GITHUB_REF_NAME -replace 'v', ''
           $date = Get-Date -Format "yyyy-MM-dd"
           $tag = $env:GITHUB_REF_NAME
-          @"
-          {
-            "appName": "BT-Resume",
-            "description": "Local AI Resume Helper - Polish, Tailor, and Format your resume privately on your own machine.",
-            "items": [
-              {
-                "version": "$version",
-                "shortVersion": [int]$version.Split('.')[1],
-                "changes": [
-                  {
-                    "type": "feat",
-                    "message": "Release $tag"
-                  }
-                ],
-                "date": "$date",
-                "mandatory": false,
-                "url": "https://github.com/rasumeng/BT-Resume/releases/download/$tag/",
-                "platform": "windows"
+          $manifest = @{
+            appName = "BT-Resume"
+            description = "Local AI Resume Helper - Polish, Tailor, and Format your resume privately on your own machine."
+            items = @(
+              @{
+                version = $version
+                shortVersion = [int]$version.Split('.')[1]
+                changes = @(
+                  @{ type = "feat"; message = "Release $tag" }
+                )
+                date = $date
+                mandatory = $false
+                url = "https://github.com/rasumeng/BT-Resume/releases/download/$tag/"
+                platform = "windows"
               }
-            ]
+            )
           }
-"@ | Set-Content releases/app-archive.json
+          $manifest | ConvertTo-Json -Depth 5 | Set-Content releases/app-archive.json -NoNewline
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v1
