@@ -1,28 +1,24 @@
+# BT Resume Update Server
+
+This branch hosts the update manifest for BT Resume auto-updates.
+
+## Files
+- pp-archive.json - Update manifest for flutter_desktop_updater
+
+## How It Works
+1. When a new release is created (via tag), GitHub Actions updates this branch
+2. The Flutter app checks pp-archive.json for new versions
+3. Updates are downloaded from GitHub Releases
+
+## Manual Setup (if GitHub Actions fails)
+1. Copy pp-archive.json from the release to this branch
+2. Push to gh-pages: git push origin gh-pages
+"@ | Set-Content "releases/README.md"
+
+# Create initial app-archive.json
+@"
 {
   "appName": "BT-Resume",
-  "description": "Local AI Resume Helper - Polish, Tailor, and Format your resume privately on your own machine.",
-  "items": [
-    {
-      "version": "1.0.0",
-      "shortVersion": 0,
-      "changes": [
-        {
-          "type": "feat",
-          "message": "Initial release with AI resume polishing, tailoring, and grading"
-        },
-        {
-          "type": "feat",
-          "message": "Embedded Python runtime and Ollama AI engine"
-        },
-        {
-          "type": "feat",
-          "message": "PDF generation and resume management"
-        }
-      ],
-      "date": "2026-05-14",
-      "mandatory": false,
-      "url": "https://github.com/rasumeng/BT-Resume/releases/download/v1.0.0/",
-      "platform": "windows"
-    }
-  ]
+  "description": "Local AI Resume Helper",
+  "items": []
 }
